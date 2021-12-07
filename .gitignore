@@ -1,0 +1,18 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# build
+/build
+/storybook-static
+
+# misc
+.DS_Store
+.idea
+.env
+.env.local
+*.log
+yarn.lock
+shore-client.browser.min.js

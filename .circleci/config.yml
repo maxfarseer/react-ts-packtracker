@@ -1,0 +1,58 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+jobs:
+  build:
+    # @TODO Replace app name
+    working_directory: ~/react-ts-boilerplate
+    docker:
+      - image: circleci/node:12.10
+
+    steps:
+      - checkout
+      - aws-cli/setup
+
+      - restore_cache:
+          keys:
+            # when lock file changes, use increasingly general patterns to restore cache
+            - v2-dependency-cache-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - v2-dependency-cache-{{ .Branch }}-
+            - v2-dependency-cache-
+
+      - run:
+          name: Configure npm
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+
+      - run:
+          name: Install npm deps
+          command: |
+            npm ci
+
+      - run:
+          name: Install sentry-cli
+          command: npm install @sentry/cli@1.49.0
+
+      - save_cache:
+          paths:
+            - node_modules/
+          key: v2-dependency-cache-{{ .Branch }}-{{ checksum "package-lock.json" }}
+
+      - run:
+          name: Lint
+          command: npm run lint
+
+      - run:
+          name: Test
+          command: npm test
+
+      - run:
+          name: Build
+          # circle bug prevents string substitution of env vars move this outside once it works
+          command: CDN_BASE_URL="//assets-cdn.shore.com/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH/\//-}/0${CIRCLE_BUILD_NUM}/" npm run build
+
+      - deploy:
+          command: |
+            # deployment to build num folder (cache forever)
+            aws s3 sync build/ s3://shore-review-apps/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH/\//-}/0${CIRCLE_BUILD_NUM}/ --delete --cache-control 'max-age=31536000'
+            # deployment to `current` folder (lucid caching)
+            aws s3 sync build/ s3://shore-review-apps/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH/\//-}/current/ --delete --cache-control 'public, max-age=31536000, no-cache'

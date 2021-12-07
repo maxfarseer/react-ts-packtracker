@@ -1,0 +1,129 @@
+<%
+  const {
+    options: {
+      data: {
+        envConfig,
+        exposed,
+        jsUrls,
+        projectName,
+        clientFactory: {
+          BASE_URL_API,
+          BASE_URL_CORE,
+          BASE_URL_FILE_STORAGE,
+          MERCHANT_ACCOUNT_ID,
+          MERCHANT_UUID,
+          REALTIME_APP_KEY,
+          REALTIME_AUTH_ENDPOINT,
+          REALTIME_HTTP_HOST,
+          REALTIME_WS_HOST,
+          BASE_URL_INSTAGRAM_BOOKING,
+        }
+      }
+    },
+  } = htmlWebpackPlugin;
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% if (envConfig.DEV_MODE) { %>
+      <title>(Development) React-Typescript boilerplate </title>
+    <% }%>
+
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700" rel="stylesheet">
+
+    <% if (envConfig.DEV_MODE) { %>
+      <link rel="icon" type="image/png" sizes="32x32" href="/dev-assets/images/favicons/shore/favicon-32x32.png">
+      <link rel="icon" type="image/png" sizes="16x16" href="/dev-assets/images/favicons/shore/favicon-16x16.png">
+      <link rel="shortcut icon" href="/dev-assets/images/favicons/shore/favicon.ico">
+    <% }%>
+  </head>
+  <body>
+    <div id="appContainer"></div>
+
+    <!-- Polyfills -->
+    <script src="//cdn.polyfill.io/v2/polyfill.min.js?features=default,fetch,es6,Array.prototype.includes"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.1/custom-elements-es5-adapter.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.1/webcomponents-sd-ce.js"></script>
+
+    <!-- External dependencies -->
+    <% jsUrls.forEach(cdnUrl => { %>
+      <script src="<%= cdnUrl %>" type="text/javascript"></script>
+    <% }) %>
+
+    <script>
+      window.BASE_URL_API=<%= BASE_URL_API %>;
+      window.BASE_URL_CORE=<%= BASE_URL_CORE %>;
+      window.BASE_URL_FILE_STORAGE=<%= BASE_URL_FILE_STORAGE %>;
+      window.MERCHANT_ACCOUNT_ID=<%= MERCHANT_ACCOUNT_ID %>;
+      window.MERCHANT_UUID=<%= MERCHANT_UUID %>;
+      window.REALTIME_APP_KEY=<%= REALTIME_APP_KEY %>;
+      window.REALTIME_AUTH_ENDPOINT=<%= REALTIME_AUTH_ENDPOINT %>;
+      window.REALTIME_HTTP_HOST=<%= REALTIME_HTTP_HOST %>;
+      window.REALTIME_WS_HOST=<%= REALTIME_WS_HOST %>;
+    </script>
+
+    <!-- Shore API Client -->
+    <script src="//assets-cdn.shore.com/shore-javascript-client/master/current/shore-client.browser.min.js"></script>
+
+    <!-- Expose window.Shore.client -->
+    <script src="/dev-assets/shore-client-factory.js"></script>
+
+    <!-- Dev .js bundle -->
+     <script src="/<%= projectName %>.min.js"></script>
+
+    <script>
+      const merchantUUID = location.search.match(/merchant_uuid=([\w-]+)/);
+      const merchantId = merchantUUID
+        ?  merchantUUID[1]
+        : <%= envConfig.MERCHANT_UUID %>;
+
+      const lang = localStorage.language || 'zu';
+
+      fetch('/src/assets/locales/translation.' + lang + '.json')
+        .then(response => response.json())
+        .then((data) => {
+          return i18n.init({
+            fallbackLng: 'zu',
+            lng: lang,
+            resGetPath: '/src/assets/locales/translation.__lng__.json',
+            useCookie: false
+          }, function() {
+            i18n.addResourceBundle(lang, '<%= projectName %>', data);
+            // start the App
+            return  window.<%= exposed %>.create({
+              apiClient: window.Shore.client,
+              container: '#appContainer', // String (CSS selector) or HTML Node
+              mountPath: '/', // The root route config for the router
+              useHashHistory: false, // Tell the router to use browser or hash location
+              onAction: action => {
+                if (action.meta && action.meta.proxy) {
+                  const appContainer = document.getElementById('appContainer');
+                  switch(action.type) {
+                    case 'CLICK_CLOSE_SIDEBAR':
+                      appContainer.style.display = 'none';
+                      break;
+                  }
+                }
+              },
+              settings: {
+                locale: lang,
+                merchantId,
+                apiEnv: 'development',
+              },
+              logError: (err) => {
+                console.warn('Error', err);
+              },
+              trackMethod: (eventName, data) => {
+                console.log('Track', eventName, data);
+              },
+            })
+          });
+        })
+    </script>
+  </body>
+</html>

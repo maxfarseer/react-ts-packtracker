@@ -1,0 +1,90 @@
+{
+  "extends": [
+    "plugin:prettier/recommended",
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "env": {
+    "node": true,
+    "es6": true,
+    "browser": true,
+    "jest": true
+  },
+  "rules": {
+    "prettier/prettier": "error",
+    "implicit-arrow-linebreak": "off",
+    "comma-dangle": "off",
+    "indent": "off",
+    "react/jsx-wrap-multilines": "off",
+    "no-trailing-spaces": "off",
+    "react/jsx-filename-extension": [2, {
+      "extensions": [
+        ".js",
+        ".jsx",
+        ".ts",
+        ".tsx"
+      ]
+    }],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "camelcase": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/no-var-requires": "warn",
+    "react/jsx-props-no-spreading": "off",
+    "react/jsx-curly-newline" : "off",
+    "object-curly-newline": "off",
+    "arrow-parens": "off",
+    "function-paren-newline": "off",
+    "import/extensions": "off",
+    "react/prop-types": "off",
+    // note you must disable the base rule as it can report incorrect errors
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "interface",
+        "format": ["PascalCase"],
+        "custom": {
+          "regex": "^I[A-Z]",
+          "match": true
+        }
+      }
+    ],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "extendDefaults": true,
+        "types": {
+          "{}": false
+        }
+      }
+    ]
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    },
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["@assets", "./src/assets/"],
+          ["@components", "./src/components/"],
+          ["@utils", "./src/utils/"]
+        ],
+        "extensions": [".js",".jsx",".tsx", ".ts"]
+      },
+      "node": {
+        "extensions": [".js",".jsx",".tsx", ".ts"]
+      }
+    }
+  }
+}

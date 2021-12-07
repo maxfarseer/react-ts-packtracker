@@ -1,0 +1,8 @@
+{
+  "errors": {
+    "unknown": "Unknown error",
+    "not-found": "Page not found",
+    "maintenance-title" : "Something went wrong",
+    "maintenance-message": "Shore is undergoing maintenance work right now. Please give us a couple of\n minutes and we will be back. Sorry for the inconvenience!"
+  }
+}
